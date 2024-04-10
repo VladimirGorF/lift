@@ -1,27 +1,30 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref } from "vue";
 
 let liftsBox = ref([7, 6, 5, 4, 3, 2, 1]); //  список этажей
 let gapOfFloor = ref(100 / liftsBox.value.length); // сколько процентов занимает каждый этаж
-let liftCall = ref(1); // вызванный этаж
+let liftLevel = ref(String(liftsBox.value[1] * gapOfFloor.value) + "%"); // начинаем с 1 этажа
 
-const liftGoing = computed(() => {
-  let index = liftCall.value;
-  if (index === liftsBox.value.length) return "2px"; // последний этаж
-  return String(liftsBox.value[index] * gapOfFloor.value) + "%";
-});
+let liftCall = ref(1); // вызванный этаж
+let diffGap = ref(gapOfFloor.value / 10); // пилим на 10 частей шаг лифта по 100мс
+console.log(diffGap.value);
+
+function liftTimer() {
+  let counter = 1; // счетчик для интервалки
+  let liftFlor = liftsBox.value[1] * gapOfFloor.value ;
+  const timer = setInterval(function () {
+    if (counter === 10) {
+      clearInterval(timer);
+    }
+    liftLevel.value = String(liftFlor - diffGap.value) + "%"; // уменьшаем на 1%
+    counter++;
+    liftFlor -= diffGap.value;
+  }, 100);
+}
 
 function goLift(liftPlace) {
-  // let counter = 1;
-  // const timer = setInterval(function () {
-  //   if (counter === 5) {
-  //     clearInterval(timer);
-  //   }
-  //   console.log("ok");
-  //   counter++;
-  // }, 1000);
-
   liftCall.value = liftPlace;
+  liftTimer();
 }
 </script>
 
@@ -31,7 +34,7 @@ function goLift(liftPlace) {
       <div v-for="liftPlace in liftsBox" :key="liftPlace" class="liftPlace">
         {{ liftPlace }}
       </div>
-      <div class="lift" :style="`top: ${liftGoing};`"></div>
+      <div class="lift" :style="`top: ${liftLevel};`"></div>
     </div>
     <div class="containerButtons">
       <div v-for="liftPlace in liftsBox" :key="liftPlace" class="buttonBox">
