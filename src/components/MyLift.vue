@@ -7,6 +7,15 @@ let diffGap = ref(gapOfFloor.value / 10); // пилим на 10 частей ш�
 let liftLevel = ref(String(liftsBox.value[1] * gapOfFloor.value) + "%"); // начинаем с 1 этажа
 let liftMemory = ref(1); //  память текущего этажа перед вызовом
 
+let liftIsRest = ref(false);
+
+function haveRest(){
+  liftIsRest.value = true   // лифт на отдыхе
+  setTimeout(() => {
+    liftIsRest.value = false
+  }, 3000); 
+}
+
 function liftTimer(liftCall) {
   // проверяем в какую сторону двигается лифт: вверх или вниз
   if (liftCall > liftMemory.value) {
@@ -17,6 +26,7 @@ function liftTimer(liftCall) {
       counter++;
       liftFlor -= diffGap.value; // уменьшаем отступ сверху на 1\10 от этажа
       if (counter === (liftCall - liftMemory.value) * 10) {
+        haveRest(); // моргание лифта
         clearInterval(timer);
         // если это последний этаж
         if (liftCall === liftsBox.value.length) {
@@ -39,6 +49,7 @@ function liftTimer(liftCall) {
     }
     const timer = setInterval(function () {
       if (counter === (liftMemory.value - liftCall) * 10) {
+        haveRest(); // моргание лифта
         clearInterval(timer);
         liftLevel.value =
           String(liftsBox.value[liftCall] * gapOfFloor.value) + "%"; // при завершении инетервалки устанавливаем уровень этажа
@@ -58,7 +69,7 @@ function liftTimer(liftCall) {
       <div v-for="liftPlace in liftsBox" :key="liftPlace" class="liftPlace">
         {{ liftPlace }}
       </div>
-      <div class="lift" :style="`top: ${liftLevel};`"></div>
+      <div :class="['lift', {'blink': liftIsRest}]" :style="`top: ${liftLevel};`"></div>
     </div>
     <div class="containerButtons">
       <div v-for="liftCall in liftsBox" :key="liftCall" class="buttonBox">
@@ -72,6 +83,17 @@ function liftTimer(liftCall) {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+@keyframes blink-animation {
+  to {
+    visibility: hidden;
+  }
+}
+@-webkit-keyframes blink-animation {
+  to {
+    visibility: hidden;
+  }
+}
+
 .container {
   display: flex;
   gap: 10px;
@@ -100,7 +122,14 @@ function liftTimer(liftCall) {
   border: 1px solid red;
   height: 70px;
   width: 70px;
+  margin-top: 5px;
 }
+
+.blink {
+  animation: blink-animation 0.3s steps(5, start) 6;
+  -webkit-animation: blink-animation .5s steps(5, start) 6;
+}
+
 .buttonBox {
   height: 80px;
   width: 50px;
