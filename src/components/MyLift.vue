@@ -3,22 +3,24 @@ import { ref } from "vue";
 
 let liftsBox = ref([7, 6, 5, 4, 3, 2, 1]); //  список этажей
 let gapOfFloor = ref(100 / liftsBox.value.length); // сколько процентов занимает каждый этаж
+let diffGap = ref(gapOfFloor.value / 10); // пилим на 10 частей шаг лифта по 100мс
 let liftLevel = ref(String(liftsBox.value[1] * gapOfFloor.value) + "%"); // начинаем с 1 этажа
+let liftMemory = ref(1) //  не меняется в отличие liftCall при вызове лифта, а только после отработки функции
 
 let liftCall = ref(1); // вызванный этаж
-let diffGap = ref(gapOfFloor.value / 10); // пилим на 10 частей шаг лифта по 100мс
-console.log(diffGap.value);
 
 function liftTimer() {
-  let counter = 1; // счетчик для интервалки
-  let liftFlor = liftsBox.value[1] * gapOfFloor.value ;
+  let counter = 1; // счетчик для интервалки 10 по 100
+  let liftFlor = liftsBox.value[liftMemory.value] * gapOfFloor.value ;
   const timer = setInterval(function () {
     if (counter === 10) {
       clearInterval(timer);
+      liftLevel.value = String(liftsBox.value[liftCall.value] * gapOfFloor.value) + "%"  // при заврешении инетервалки устанавливаем уровень этажа
+      liftMemory.value += 1
     }
-    liftLevel.value = String(liftFlor - diffGap.value) + "%"; // уменьшаем на 1%
+    liftLevel.value = String(liftFlor - diffGap.value) + "%"; 
     counter++;
-    liftFlor -= diffGap.value;
+    liftFlor -= diffGap.value; // уменьшаем отступ сверху на 1\10 от этажа
   }, 100);
 }
 
