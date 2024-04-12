@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from "vue";
-import {liftBox, stepFrequency, restTiming} from '../constants/index.js'
- 
+import { liftBox, stepFrequency, restTiming } from "../constants/index.js";
+
 const liftsBox = ref(liftBox);
 let gapOfFloor = ref(100 / liftsBox.value.length); // сколько процентов шахты занимает каждый этаж
 let diffGap = gapOfFloor.value / stepFrequency; // пилим на 100 частей шаг лифта по 100мс
@@ -17,6 +17,15 @@ const directionOfMoving = computed(() => {
     return queue.value[0] + " up";
   } else if (liftMemory.value > queue.value[0] && liftIsWorking.value) {
     return queue.value[0] + " down";
+  }
+
+
+   //  EСЛИ ретерн сработал уже то ниже на сработает!!!!
+
+
+   
+  if (liftIsRest.value) {
+    return liftMemory.value;
   }
   return null;
 });
