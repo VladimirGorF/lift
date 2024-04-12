@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from "vue";
-import {liftBox, stepFrequency, restTiming} from '../utils/index.js'
+import {liftBox, stepFrequency, restTiming} from '../constants/index.js'
  
 const liftsBox = ref(liftBox);
 let gapOfFloor = ref(100 / liftsBox.value.length); // сколько процентов шахты занимает каждый этаж
@@ -230,3 +230,4 @@ function liftEngine(liftCall) {
   color: aliceblue;
 }
 </style>
+../constants/index.js
