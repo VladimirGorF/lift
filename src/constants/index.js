@@ -11,4 +11,5 @@ function liftConstructor(numberOfFloors) {
   }
 }
 
-liftConstructor(numberOfFloors); // вызываем конструктор шахты лифта
+// конструктор шахты лифта(этажность)
+liftConstructor(numberOfFloors); 

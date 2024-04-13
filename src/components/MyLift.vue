@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { liftBox, stepFrequency, restTiming } from "../constants/index.js";
 
 const liftsBox = ref(liftBox);
@@ -11,6 +11,24 @@ let liftIsWorking = ref(false); // лифт в работе
 let liftIsRest = ref(false); // лифт на отдыхе 3 с
 const queue = ref([]); // очередь вызовов
 
+onMounted(loadingStorage);
+
+function loadingStorage() {
+  if (localStorage.getItem("queue")) {
+    queue.value = localStorage
+      .getItem("queue")
+      .split(",")
+      .map((call) => Number(call));
+    liftMemory.value = Number(localStorage.getItem("liftMemory"));
+    liftManager();
+  }
+}
+
+function updateStorage() {
+  localStorage.setItem("queue", queue.value);
+  localStorage.setItem("liftMemory", liftMemory.value);
+}
+
 const directionOfMoving = computed(() => {
   // индикатор направления движения движения лифта
   if (liftMemory.value < queue.value[0] && liftIsWorking.value) {
@@ -18,12 +36,6 @@ const directionOfMoving = computed(() => {
   } else if (liftMemory.value > queue.value[0] && liftIsWorking.value) {
     return queue.value[0] + " down";
   }
-
-
-   //  EСЛИ ретерн сработал уже то ниже на сработает!!!!
-
-
-   
   if (liftIsRest.value) {
     return liftMemory.value;
   }
@@ -33,6 +45,7 @@ const directionOfMoving = computed(() => {
 function haveRest() {
   liftIsRest.value = true; // лифт на отдыхе
   queue.value.splice(0, 1); // очищаем очередь от старого вызова
+  updateStorage(); // записываем очередь в хранилище
   setTimeout(() => {
     liftIsRest.value = false; // лифт свободен
     liftIsWorking.value = false; // лифт свободен
@@ -63,6 +76,7 @@ function queueLoader(liftCall) {
   if (!queue.value.includes(liftCall) && liftMemory.value !== liftCall) {
     // добавляем вызов в очередь
     queue.value.push(liftCall);
+    updateStorage();
     // запускаем менеджер, если лифт не в состоянии работы
     if (!liftIsWorking.value) {
       liftManager();
@@ -75,6 +89,7 @@ function queueLoader(liftCall) {
     !liftIsRest.value
   ) {
     queue.value.push(liftCall);
+    updateStorage();
   }
 }
 
@@ -85,19 +100,13 @@ function liftEngine(liftCall) {
     let liftFlor = liftsBox.value[liftMemory.value] * gapOfFloor.value;
     const timer = setInterval(function () {
       liftLevel.value = String(liftFlor - diffGap) + "%";
+      updateStorage();
       counter++;
       liftFlor -= diffGap; // уменьшаем отступ сверху на 1\10 от этажа
       if (counter === (liftCall - liftMemory.value) * stepFrequency) {
+        liftMemory.value = liftCall; // меняем этаж в памяти на вызванный
         haveRest(); // моргание лифта
         clearInterval(timer);
-        // если это последний этаж
-        if (liftCall === liftsBox.value.length) {
-          liftLevel.value = "0%";
-        } else {
-          liftLevel.value =
-            String(liftsBox.value[liftCall] * gapOfFloor.value) + "%"; // при заврешении инетервалки устанавливаем уровень этажа
-        }
-        liftMemory.value = liftCall; // меняем этаж в памяти на вызванный
       }
     }, 10);
   } else if (liftCall < liftMemory.value) {
@@ -110,15 +119,17 @@ function liftEngine(liftCall) {
     }
     const timer = setInterval(function () {
       if (counter === (liftMemory.value - liftCall) * stepFrequency) {
+        // при завершении инетервалки устанавливаем уровень этажа
+        liftMemory.value = liftCall;
         haveRest(); // моргание лифта
         clearInterval(timer);
         liftLevel.value =
-          String(liftsBox.value[liftCall] * gapOfFloor.value) + "%"; // при завершении инетервалки устанавливаем уровень этажа
-        liftMemory.value = liftCall; // запоминаем этаж на текущий
+          String(liftsBox.value[liftCall] * gapOfFloor.value) + "%";
       }
       liftLevel.value = String(liftFlor + diffGap) + "%";
       counter++;
       liftFlor += diffGap; // уменьшаем отступ сверху на 1\10 от этажа
+      updateStorage();
     }, 10);
   }
 }
@@ -139,7 +150,7 @@ function liftEngine(liftCall) {
         <div class="indicator" v-if="liftIsWorking && !liftIsRest">
           {{ directionOfMoving }}
         </div>
-        <div v-if="!liftIsWorking">{{ liftMemory }}</div>
+        <div v-else>{{ liftMemory }}</div>
       </div>
     </div>
     <div class="containerButtons">
@@ -239,4 +250,4 @@ function liftEngine(liftCall) {
   color: aliceblue;
 }
 </style>
-../constants/index.js
+
