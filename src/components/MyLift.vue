@@ -1,15 +1,24 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { liftBox, stepFrequency, restTiming } from "../constants/index.js";
+import {
+  liftBox,
+  stepFrequency,
+  restTiming,
+} from "../constants/index.js";
 
 const liftsBox = ref(liftBox);
 let gapOfFloor = ref(100 / liftsBox.value.length); // сколько процентов шахты занимает каждый этаж
-let diffGap = gapOfFloor.value / stepFrequency; // пилим на 100 частей шаг лифта по 100мс
+let diffGap = gapOfFloor.value / stepFrequency; // пилим шаг лифта по 100мс
 let liftLevel = ref(String(liftsBox.value[1] * gapOfFloor.value) + "%"); // начинаем с 1 этажа
 let liftMemory = ref(1); //  память текущего этажа перед вызовом
 let liftIsWorking = ref(false); // лифт в работе
-let liftIsRest = ref(false); // лифт на отдыхе 3 с
+let liftIsRest = ref(false); // лифт на отдыхе 3с
 const queue = ref([]); // очередь вызовов
+
+function liftTop() {
+  // возврат стиля Top
+    return "top: " + liftLevel.value;
+}
 
 onMounted(loadingStorage);
 
@@ -145,7 +154,7 @@ function liftEngine(liftCall) {
       ></div>
       <div
         :class="['lift', { blink: liftIsRest }]"
-        :style="`top: ${liftLevel};`"
+        :style="liftTop()"
       >
         <div class="indicator" v-if="liftIsWorking && !liftIsRest">
           {{ directionOfMoving }}
@@ -153,6 +162,7 @@ function liftEngine(liftCall) {
         <div v-else>{{ liftMemory }}</div>
       </div>
     </div>
+
     <div class="containerButtons">
       <div v-for="liftCall in liftsBox" :key="liftCall" class="buttonBox">
         <div
@@ -250,4 +260,3 @@ function liftEngine(liftCall) {
   color: aliceblue;
 }
 </style>
-

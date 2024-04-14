@@ -1,20 +1,10 @@
-<template>
-  <MyLift/>
-</template>
-
-<script>
+<script setup>
 import MyLift from './components/MyLift.vue'
-
-export default {
-  name: 'App',
-  components: {
-    MyLift
-  }
-}
 </script>
 
-<style>
-#app {
+<template>
+      <MyLift />
+</template>
 
-}
+<style>
 </style>
